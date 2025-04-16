@@ -4,7 +4,7 @@ import os
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(("localhost", 8000))
 
-file = "clientimg.png"
+file = "<insert-file-path>"
 
 with open(file, "rb") as f:
     data = f.read()
