@@ -1,7 +1,9 @@
 import socket
 from PIL import Image
 from io import BytesIO
+import pypandoc
 import os
+import subprocess
 from pydub import AudioSegment
 from moviepy import VideoFileClip
 
@@ -32,9 +34,6 @@ if file_name.endswith(image_file_type):
     image_output = BytesIO()
     img.save(image_output, conversion_type.upper())
     converted_file = image_output.getvalue()
-    client.sendall(converted_file)
-    client.send(b"<END1>")
-    client.recv(1024).decode()
     image_output.close()
     image_data.close()
 
@@ -52,9 +51,6 @@ if file_name.endswith(doc_file_type):
         converted_file = f.read()
     os.remove("serveroutput."+conversion_type)
     os.remove("serverfile."+file_ext)
-    client.sendall(converted_file)
-    client.send(b"<END1>")
-    client.recv(1024).decode()
     
 audio_file_type = (".mp3", ".wav", ".flac", ".aac", ".ogg", ".aiff", ".wma")
 if file_name.endswith(audio_file_type):
@@ -64,9 +60,6 @@ if file_name.endswith(audio_file_type):
     audio_output = BytesIO()
     AudioSegment.from_file(audio_data).export(audio_output, format=conversion_type)
     converted_file = audio_output.getvalue()
-    client.sendall(converted_file)
-    client.send(b"<END1>")
-    client.recv(1024).decode()
     audio_output.close()
     audio_data.close()
 
@@ -83,11 +76,10 @@ if file_name.endswith(video_file_type):
         converted_file = f.read()
     os.remove("serveroutput."+conversion_type)
     os.remove("serverfile."+file_ext)
-    client.sendall(converted_file)
-    client.send(b"<END1>")
-    client.recv(1024).decode()
     
-    
+client.sendall(converted_file)
+client.send(b"<END1>")
+client.recv(1024).decode()    
 new_file_name = file_name.split('.')
 new_file_name[-1] = conversion_type
 new_file_name = 'converted' + '.'.join(new_file_name)
