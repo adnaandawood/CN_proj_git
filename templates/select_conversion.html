@@ -1,0 +1,62 @@
+<!-- templates/select_conversion.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center">
+    <div class="card p-6 w-full max-w-lg">
+        <h2 class="text-xl font-semibold mb-6 text-center">Select Conversion Format</h2>
+        
+        <div class="mb-4 text-center">
+            <div class="p-3 bg-gray-800 rounded inline-block">
+                <p class="text-sm text-gray-300">Current file: <span class="text-indigo-300">{{ filename }}</span></p>
+            </div>
+        </div>
+    
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2">Choose target format:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {% for option in options %}
+                <label class="cursor-pointer">
+                    <input type="radio" name="conversion_type" value="{{ option }}" class="hidden peer" required {% if loop.first %}checked{% endif %}>
+                    <div class="flex items-center justify-center p-3 border border-gray-700 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-900/30 hover:bg-gray-800 transition-colors">
+                        <span class="text-lg font-medium">{{ option }}</span>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <button type="submit" onclick="handleConvert()" class="btn-primary">
+                <span>Convert File</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleConvert() {
+        const selectedOption = document.querySelector('input[name="conversion_type"]:checked').value;
+        console.log("Selected conversion type:", selectedOption);
+
+        fetch("/convert", {
+            method:"POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({selectedOption})
+        })
+        .then(response => response.json())
+        .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect;  // do the actual redirect
+        } else {
+            alert("Conversion failed!");
+        }
+        });
+
+        // console.log("Conversion type sent : ", resp);
+    }
+
+</script>
+{% endblock %}
