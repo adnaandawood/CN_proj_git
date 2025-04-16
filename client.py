@@ -1,10 +1,16 @@
 import socket
 import os
+from OpenSSL import SSL
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ctx = SSL.Context(SSL.TLSv1_2_METHOD)
+ctx.set_options(SSL.OP_NO_SSLv2 | SSL.OP_NO_SSLv3)
+
+client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+client = SSL.Connection(ctx, client_sock)
 client.connect(("localhost", 8000))
 
-file = "<insert-file-path>"
+file = "clientVideo.mp4"
 
 with open(file, "rb") as f:
     data = f.read()

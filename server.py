@@ -6,11 +6,19 @@ import os
 import subprocess
 from pydub import AudioSegment
 from moviepy import VideoFileClip
+from OpenSSL import SSL
+
+ctx = SSL.Context(SSL.TLSv1_2_METHOD)
+ctx.use_privatekey_file('key')          #'key' file required in server location
+ctx.use_certificate_file('cert')        #'cert' file required in server location
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('localhost', 8000))
 server.listen()
-client, addr = server.accept()
+
+client_sock, addr = server.accept()
+client = SSL.Connection(ctx, client_sock)
+client.set_accept_state()
 
 file_name = client.recv(1024).decode()
 file_size = client.recv(1024).decode()
