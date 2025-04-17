@@ -16,9 +16,13 @@
             <label class="block text-sm font-medium mb-2">Choose target format:</label>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {% for option in options %}
-                <label class="cursor-pointer">
-                    <input type="radio" name="conversion_type" value="{{ option }}" class="hidden peer" required {% if loop.first %}checked{% endif %}>
-                    <div class="flex items-center justify-center p-3 border border-gray-700 rounded-lg peer-checked:border-indigo-500 peer-checked:bg-indigo-900/30 hover:bg-gray-800 transition-colors">
+                <label class="block cursor-pointer">
+                    <input type="radio" name="conversion_type" value="{{ option }}" 
+                           class="sr-only peer" required 
+                           {% if loop.first %}checked{% endif %}>
+                    <div class="flex items-center justify-center p-3 border border-gray-700 rounded-lg 
+                                peer-checked:border-indigo-500 peer-checked:bg-white 
+                                hover:bg-gray-800 transition-colors">
                         <span class="text-lg font-medium">{{ option }}</span>
                     </div>
                 </label>
@@ -27,15 +31,35 @@
         </div>
         
         <div class="text-center">
-            <button type="submit" onclick="handleConvert()" class="btn-primary">
-                <span>Convert File</span>
+            <button id="convertBtn" type="submit" onclick="handleConvert()" class="btn-primary">
+                <span id="btnText">Convert File</span>
+                <span id="loadingSpinner" class="hidden ml-2 inline-block w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
             </button>
+        </div>
+        
+        <!-- Loading overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+                <div class="inline-block w-12 h-12 border-4 border-t-transparent border-indigo-500 rounded-full animate-spin mb-4"></div>
+                <p class="text-white font-medium">Converting file...</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     function handleConvert() {
+        // Show loading state
+        const convertBtn = document.getElementById('convertBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        convertBtn.disabled = true;
+        btnText.textContent = 'Converting...';
+        loadingSpinner.classList.remove('hidden');
+        loadingOverlay.classList.remove('hidden');
+        
         const selectedOption = document.querySelector('input[name="conversion_type"]:checked').value;
         console.log("Selected conversion type:", selectedOption);
 
@@ -48,15 +72,25 @@
         })
         .then(response => response.json())
         .then(data => {
-        if (data.success) {
-            window.location.href = data.redirect;  // do the actual redirect
-        } else {
-            alert("Conversion failed!");
-        }
+            if (data.success) {
+                window.location.href = data.redirect;  // do the actual redirect
+            } else {
+                // Hide loading state on error
+                convertBtn.disabled = false;
+                btnText.textContent = 'Convert File';
+                loadingSpinner.classList.add('hidden');
+                loadingOverlay.classList.add('hidden');
+                alert("Conversion failed!");
+            }
+        })
+        .catch(error => {
+            // Hide loading state on error
+            convertBtn.disabled = false;
+            btnText.textContent = 'Convert File';
+            loadingSpinner.classList.add('hidden');
+            loadingOverlay.classList.add('hidden');
+            alert("Error: " + error.message);
         });
-
-        // console.log("Conversion type sent : ", resp);
     }
-
 </script>
 {% endblock %}
